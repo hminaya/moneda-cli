@@ -1,0 +1,39 @@
+{
+  "name": "moneda-cli",
+  "version": "1.0.0",
+  "description": "Command line to track cryptocurrency prices",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node ./index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hminaya/moneda-cli.git"
+  },
+  "bin": {
+    "moneda": "./index.js"
+  },
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "keywords": [
+    "xrp",
+    "bitcoin",
+    "eth",
+    "crypto",
+    "BCH"
+  ],
+  "author": "Hector Minaya <hminaya@gmail.com> (http://www.hectorminaya.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hminaya/moneda-cli/issues"
+  },
+  "homepage": "https://github.com/hminaya/moneda-cli#readme",
+  "dependencies": {
+    "colors": "^1.1.2",
+    "ora": "^1.3.0",
+    "axios": "^0.17.1",
+    "cli-table2": "^0.2.0"
+  }
+}
