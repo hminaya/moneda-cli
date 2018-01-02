@@ -1,4 +1,5 @@
 # Moneda
+[![npm version](https://badge.fury.io/js/moneda-cli.svg)](https://badge.fury.io/js/moneda-cli)
 
 Command line to track cryptocurrency prices
 
