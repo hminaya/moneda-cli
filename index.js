@@ -143,7 +143,7 @@ if ( typeof coin !== 'undefined' && coin )
                 let coinLow = numberWithCommas(parseFloat(response.data.low).toFixed(4).toLocaleString());
                 let coinHigh = numberWithCommas(parseFloat(response.data.high).toFixed(4));
 
-                cexData = [lbl, {hAlign:'right',content:'$' + coinPrice}, {hAlign:'right',content:'$' + coinLow}, {hAlign:'right',content:'$' + coinHigh}];
+                cexData = [lbl, {hAlign:'right',content:'$' + coinPrice}, {hAlign:'right',content:'$' + coinHigh}, {hAlign:'right',content:'$' + coinLow}];
             }
 
             return cexData;
@@ -172,7 +172,7 @@ if ( typeof coin !== 'undefined' && coin )
             let coinLow = numberWithCommas(parseFloat(response.data.low).toFixed(4).toLocaleString());
             let coinHigh = numberWithCommas(parseFloat(response.data.high).toFixed(4));
 
-            cexData = [lbl, {hAlign:'right',content:'$' + coinPrice}, {hAlign:'right',content:'$' + coinLow}, {hAlign:'right',content:'$' + coinHigh}];
+            cexData = [lbl, {hAlign:'right',content:'$' + coinPrice}, {hAlign:'right',content:'$' + coinHigh}, {hAlign:'right',content:'$' + coinLow}];
         }
 
         return cexData;
