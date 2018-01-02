@@ -22,6 +22,9 @@ npm moneda [coin]
 npm moneda XRP
 ```
 
+### Demo
+![example](https://i.imgur.com/bqSmoEd.gif)
+
 ### Supported Coins
 - [x] Ripple (XRP)
 - [x] Bitcoin Cash (BCH)
