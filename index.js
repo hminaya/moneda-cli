@@ -30,11 +30,11 @@ var table = new Table();
 if ( typeof coin !== 'undefined' && coin )
 {
     table = new Table({
-        head: ['Exchange', {hAlign:'center',content:'Price (USD)'}, {hAlign:'center',content:'High'}, {hAlign:'center',content:'Low'}]
+        head: ['Source', {hAlign:'center',content:'Price (USD)'}, {hAlign:'center',content:'High'}, {hAlign:'center',content:'Low'}]
     });
 } else {
     table = new Table({
-        head: ['Coin', {hAlign:'center',content:'Price (USD)'}, {hAlign:'center',content:'High'}, {hAlign:'center',content:'Low'}]
+        head: ['Coin/Source', {hAlign:'center',content:'Price (USD)'}, {hAlign:'center',content:'High'}, {hAlign:'center',content:'Low'}]
     });
 }
 
@@ -43,10 +43,14 @@ let priceRow = [];
 // Get Data
 if ( typeof coin !== 'undefined' && coin )
 {
-    axios.all([getCexInfoByCoin(coin, "cex.io")])
-    .then(axios.spread(function (priceRowCex) {
+    axios.all([
+        getCexInfoByCoin(coin, "cex.io"),
+        getBitstampInfoByCoin(coin, "Bitstamp.net"),
+    ])
+    .then(axios.spread(function (priceRowCex, priceRowBitstamp) {
       
       table.push(priceRowCex);
+      table.push(priceRowBitstamp);
 
       coolSpinner.stop()
   
@@ -62,6 +66,34 @@ if ( typeof coin !== 'undefined' && coin )
 
 //Done.
 
+    function getBitstampInfoByCoin(crypto, lbl){
+        return axios.get('https://www.bitstamp.net/api/v2/ticker/' + crypto + 'USD')
+            .then(function (response) {
+
+            // Check for errors
+            if (response.data.error && response.data.error !== "") {
+                cexData = [lbl, {colSpan:3,content:response.data.error}];
+            } else {
+                // Get data
+                let coinPrice = numberWithCommas(parseFloat(response.data.last).toFixed(4));
+                let coinLow = numberWithCommas(parseFloat(response.data.low).toFixed(4).toLocaleString());
+                let coinHigh = numberWithCommas(parseFloat(response.data.high).toFixed(4));
+
+                cexData = [lbl, {hAlign:'right',content:'$' + coinPrice}, {hAlign:'right',content:'$' + coinLow}, {hAlign:'right',content:'$' + coinHigh}];
+            }
+
+            return cexData;
+
+            })
+            .catch(function (error) {
+                //console.log(error);
+                //console.log('Ups. Something went wrong, please try again latter....');
+
+                return [lbl, {colSpan:3,content:'Ups. Something went wrong, please try again latter....'}];
+            });
+
+    }
+
   function getCexInfoByCoin(crypto, lbl){
 
     return axios.get('https://cex.io/api/ticker/' + crypto + '/USD')
@@ -69,7 +101,7 @@ if ( typeof coin !== 'undefined' && coin )
 
         // Check for errors
         if (response.data.error && response.data.error !== "") {
-            cexData = [lbl, response.data.error, '', ''];
+            cexData = [lbl, {colSpan:3,content:response.data.error}];
 		} else {
             // Get data
             let coinPrice = numberWithCommas(parseFloat(response.data.last).toFixed(4));
@@ -83,9 +115,10 @@ if ( typeof coin !== 'undefined' && coin )
 
         })
         .catch(function (error) {
-            console.log(error);
-            console.log('Ups. Something went wrong, please try again latter....');
-            coolSpinner.stop()
+            //console.log(error);
+            //console.log('Ups. Something went wrong, please try again latter....');
+
+            return [lbl, {colSpan:3,content:'Ups. Something went wrong, please try again latter....'}];
         });
 
   }
@@ -93,18 +126,20 @@ if ( typeof coin !== 'undefined' && coin )
   function getCexInfo(){
 
     axios.all([
-        getCexInfoByCoin("XRP", "Ripple (XRP)"), 
-        getCexInfoByCoin("BTC", "Bitcoin (BTC)"),
-        getCexInfoByCoin("BCH", "Bitcoin Cash (BCH)"),
-        getCexInfoByCoin("DASH", "Dash (DASH)"),
+        getCexInfoByCoin("XRP", "Ripple (XRP) - cex.io"), 
+        getCexInfoByCoin("BTC", "Bitcoin (BTC) - cex.io"),
+        getCexInfoByCoin("BCH", "Bitcoin Cash (BCH) - cex.io"),
+        getCexInfoByCoin("DASH", "Dash (DASH) - cex.io"),
+        getBitstampInfoByCoin("LTC", "LiteCoin (LTC) - Bitstamp.net"),
     ])
-    .then(axios.spread(function (priceRowXRP, priceRowBTC, priceRowBCH, priceRowDASH) {
+    .then(axios.spread(function (priceRowXRP, priceRowBTC, priceRowBCH, priceRowDASH, priceRowLTC) {
       
       table.push(priceRowXRP);
       table.push(priceRowBTC);
       table.push(priceRowBCH);
       table.push(priceRowDASH);
-  
+      table.push(priceRowLTC);
+      
       console.log('');
       console.log(table.toString());
   

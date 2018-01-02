@@ -31,7 +31,7 @@ npm moneda XRP
 - [x] Bitcoin (BTC)
 - [x] Dash
 - [ ] Monero (XMR)
-- [ ] Litecoin (LTC)
+- [x] Litecoin (LTC)
 - [ ] IOTA (MIOTA)
 - [ ] Cardano (ADA)
 
@@ -39,6 +39,7 @@ npm moneda XRP
 - [x] cex.io
 - [ ] gdax
 - [ ] kraken
+- [x] bitstamp.net
 
 ### Tips
 
