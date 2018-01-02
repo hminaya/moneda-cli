@@ -15,10 +15,15 @@ console.log('Moneda CLI')
 
 if ( typeof coin !== 'undefined' && coin )
 {
-  console.log('Coin: ' + coin)
+    if (coin == 'MARKET'){
+        console.log('Source: CoinMarketCap.com')
+    }else{
+        console.log('Coin: ' + coin)
+    }
+    
 } else
 {
-    console.log('Default Exchange: cex.io')
+    console.log('Default Source: cex.io')
 }
 
 console.log('=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-');
@@ -29,43 +34,102 @@ const coolSpinner = ora('Loading crypto magic').start()
 var table = new Table();
 if ( typeof coin !== 'undefined' && coin )
 {
-    table = new Table({
-        head: ['Source', {hAlign:'center',content:'Price (USD)'}, {hAlign:'center',content:'High'}, {hAlign:'center',content:'Low'}]
-    });
+    if (coin == 'MARKET'){
+        table = new Table({
+            head: ['Rank', 'Name', 'Symbol', {hAlign:'center',content:'Price (USD)'}, {hAlign:'center',content:'Market Cap (USD)'}]
+        });
+    }else{
+        table = new Table({
+            head: ['Source', {hAlign:'center',content:'Price (USD)'}, {hAlign:'center',content:'High'}, {hAlign:'center',content:'Low'}]
+        });
+    }
+
 } else {
     table = new Table({
         head: ['Coin/Source', {hAlign:'center',content:'Price (USD)'}, {hAlign:'center',content:'High'}, {hAlign:'center',content:'Low'}]
     });
 }
 
-let priceRow = [];
-
 // Get Data
 if ( typeof coin !== 'undefined' && coin )
 {
-    axios.all([
-        getCexInfoByCoin(coin, "cex.io"),
-        getBitstampInfoByCoin(coin, "Bitstamp.net"),
-    ])
-    .then(axios.spread(function (priceRowCex, priceRowBitstamp) {
-      
-      table.push(priceRowCex);
-      table.push(priceRowBitstamp);
+    if (coin == 'MARKET'){
+        getMarketCapData();
+    }else{
+        getDataPerCoin(coin);
+    }
 
-      coolSpinner.stop()
-  
-      console.log('');
-      console.log(table.toString());
-
-      tips(coin);
-      
-    }));
 } else {
-    getCexInfo();
+    getDefaultCoins();
 }
 
 //Done.
 
+    function getMarketCapData(){
+
+        return axios.get('https://api.coinmarketcap.com/v1/ticker/?limit=15')
+            .then(function (response) {
+
+            // Check for errors
+            if (response.data.error && response.data.error !== "") {
+                cexData = [{colSpan:5,content:response.data.error}];
+            } else {
+
+                // Get data
+                for(var i = 0; i < response.data.length; i++) {
+
+                    var coin = response.data[i];
+
+                    let coinRank = coin.rank;
+                    let coinName = coin.name;
+                    let coinSymbol = coin.symbol;
+                    let coinPrice = numberWithCommas(parseFloat(coin.price_usd).toFixed(4));
+                    let coinMarketCap = numberWithCommas(parseFloat(coin.market_cap_usd).toFixed(2));
+    
+                    cexData = [coinRank,coinName,coinSymbol, {hAlign:'right',content:'$' + coinPrice}, {hAlign:'right',content:'$' + coinMarketCap}];
+                
+                    table.push(cexData);
+
+                }
+
+            }
+
+            coolSpinner.stop()
+
+            console.log('');
+            console.log(table.toString());
+
+            tips(coin);
+
+            })
+            .catch(function (error) {
+                console.log(error);
+                //console.log('Ups. Something went wrong, please try again latter....');
+
+                return [{colSpan:5,content:'Ups. Something went wrong, please try again latter....'}];
+            });
+    }
+
+    function getDataPerCoin(coin){
+        axios.all([
+            getCexInfoByCoin(coin, "cex.io"),
+            getBitstampInfoByCoin(coin, "Bitstamp.net"),
+        ])
+        .then(axios.spread(function (priceRowCex, priceRowBitstamp) {
+          
+          table.push(priceRowCex);
+          table.push(priceRowBitstamp);
+    
+          coolSpinner.stop()
+      
+          console.log('');
+          console.log(table.toString());
+    
+          tips(coin);
+          
+        }));
+    }
+ 
     function getBitstampInfoByCoin(crypto, lbl){
         return axios.get('https://www.bitstamp.net/api/v2/ticker/' + crypto + 'USD')
             .then(function (response) {
@@ -123,7 +187,7 @@ if ( typeof coin !== 'undefined' && coin )
 
   }
 
-  function getCexInfo(){
+  function getDefaultCoins(){
 
     axios.all([
         getCexInfoByCoin("XRP", "Ripple (XRP) - cex.io"), 
@@ -161,7 +225,7 @@ if ( typeof coin !== 'undefined' && coin )
         console.log("Buy me a beer!");
         console.log('');
 
-        if ( typeof coin !== 'undefined' && coin ){
+        if ( typeof coin !== 'undefined' && coin && coin == 'MARKET' ){
             switch (coin){
                 case "BCH":
                     console.log("Bitcoin Cash (BCH): 34R3g2mybySCY2JSTAk1PsKvbcPX5Jd63P");

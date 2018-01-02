@@ -12,15 +12,20 @@ npm install -g moneda-cli
 ### Usage
 ```bash
 # Gets price information for all supported coins
-npm moneda
+moneda
 ```
 
 ```bash
-# Gets price information for a supported coin
-npm moneda [coin]
+# Gets price information for a specific coin
+moneda [coin]
 
 # For example
-npm moneda XRP
+moneda XRP
+```
+
+```bash
+# Gets Market Cap data
+moneda market
 ```
 
 ### Demo
@@ -36,11 +41,12 @@ npm moneda XRP
 - [ ] IOTA (MIOTA)
 - [ ] Cardano (ADA)
 
-### Supported Exchanges
+### Supported Sources
 - [x] cex.io
 - [ ] gdax
 - [ ] kraken
 - [x] bitstamp.net
+- [x] CoinMarketCap.com
 
 ### Tips
 
