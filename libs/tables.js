@@ -12,15 +12,18 @@ function generatePricePerCoinTable(coinData){
             row = [];
 
         if(coin.error != ""){
-            row = [coin.source, {colSpan:3,content:coin.error}];
+            //row = [coin.source, {colSpan:3,content:coin.error}];
 
         }else{
             row = [coin.source, {hAlign:'right',content:'$' + coin.currentPrice}, {hAlign:'right',content:'$' + coin.high}, {hAlign:'right',content:'$' + coin.low}];
+            table.push(row);
         }
 
-        
-        table.push(row);
+    }
 
+    if(table.length == 0){
+        row = [{colSpan:4,content:'No data found for ' + coinData[0].symbol}];
+        table.push(row);
     }
 
     return table;

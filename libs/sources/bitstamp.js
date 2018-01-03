@@ -10,7 +10,7 @@ function getDataByCoin(symbol){
         // Check for errors
         if (response.data.error && response.data.error !== "") {
             console.log("ba")
-            var c = new coin.Coin(coin, 0, 0, 0, "bitstamp.net", response.data.error);
+            var c = new coin.Coin(symbol, 0, 0, 0, "bitstamp.net", response.data.error);
             return c;
 
 		} else {
@@ -20,7 +20,7 @@ function getDataByCoin(symbol){
             let coinLow = helpers.numberWithCommas(parseFloat(response.data.low).toFixed(4).toLocaleString());
             let coinHigh = helpers.numberWithCommas(parseFloat(response.data.high).toFixed(4));
 
-            var c = new coin.Coin(coin, coinPrice, coinHigh, coinLow, "bitstamp.net", "");
+            var c = new coin.Coin(symbol, coinPrice, coinHigh, coinLow, "bitstamp.net", "");
             return c;
 
         }
@@ -30,7 +30,7 @@ function getDataByCoin(symbol){
             //console.log(error);
             //console.log('Ups. Something went wrong, please try again latter....');
 
-            var c = new coin.Coin(coin, 0, 0, 0, "bitstamp.net", 'Ups. Something went wrong, please try again latter....');
+            var c = new coin.Coin(symbol, 0, 0, 0, "bitstamp.net", 'Ups. Something went wrong, please try again latter....');
             return c;
         });
 

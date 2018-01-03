@@ -54,13 +54,14 @@ if ( typeof coin !== 'undefined' && coin )
         axios.all([
             cexio.getDataByCoin(coin),
             bitstamp.getDataByCoin(coin),
+            market.getDataByCoin(coin)
         ])
-        .then(axios.spread(function (priceCex, priceBt) {
+        .then(axios.spread(function (priceCex, priceBt, priceMkt) {
           
-        
             var res = [];
             res.push(priceCex);
             res.push(priceBt);
+            res.push(priceMkt);
         
             var tbl = tables.generatePricePerCoinTable(res);
         

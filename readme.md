@@ -9,7 +9,7 @@ Command line to track cryptocurrency prices
 npm install -g moneda-cli
 ```
 
-### Upgrade
+### Update
 
 New features are being added frequently, you should upgrade often
 
@@ -36,10 +36,13 @@ moneda XRP
 - [x] Bitcoin Cash (BCH)
 - [x] Bitcoin (BTC)
 - [x] Dash
-- [ ] Monero (XMR)
+- [x] Monero (XMR)
 - [x] Litecoin (LTC)
-- [ ] IOTA (MIOTA)
-- [ ] Cardano (ADA)
+- [x] IOTA (MIOTA)
+- [x] Cardano (ADA)
+- [x] Stellar (XLM)
+- [x] NEM (XEM)
+- [x] Bitcoin Gold (BTG)
 
 ### Supported Sources
 - [x] cex.io
