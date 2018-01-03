@@ -6,49 +6,23 @@ const ora = require('ora')
 const axios = require('axios')
 const Table = require('cli-table2')
 
+const cexio = require('./libs/sources/cexio.js')
+const bitstamp = require('./libs/sources/bitstamp.js')
+const market = require('./libs/sources/coinmarketcap.js')
+const tables = require('./libs/tables.js')
+
 // Args
 let coin = process.argv.length > 2 ? process.argv[2].toUpperCase() : undefined;
 
 console.log('')
-console.log('=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-');
-console.log('Moneda CLI')
-
-if ( typeof coin !== 'undefined' && coin )
-{
-    if (coin == 'MARKET'){
-        console.log('Source: CoinMarketCap.com')
-    }else{
-        console.log('Coin: ' + coin)
-    }
-    
-} else
-{
-    console.log('Default Source: cex.io')
-}
-
-console.log('=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-');
-
+console.log('╔═══════════════════════════════════════════════════╗');
+console.log('║                                                   ║')
+console.log('║ Moneda CLI                                        ║')
+console.log('║ https://github.com/hminaya/moneda-cli             ║')
+console.log('║                                                   ║')
+console.log('╚═══════════════════════════════════════════════════╝');
+console.log('')
 const coolSpinner = ora('Loading crypto magic').start()
-
-// Setup Table
-var table = new Table();
-if ( typeof coin !== 'undefined' && coin )
-{
-    if (coin == 'MARKET'){
-        table = new Table({
-            head: ['Rank', 'Name', 'Symbol', {hAlign:'center',content:'Price (USD)'}, {hAlign:'center',content:'Market Cap (USD)'}]
-        });
-    }else{
-        table = new Table({
-            head: ['Source', {hAlign:'center',content:'Price (USD)'}, {hAlign:'center',content:'High'}, {hAlign:'center',content:'Low'}]
-        });
-    }
-
-} else {
-    table = new Table({
-        head: ['Coin/Source', {hAlign:'center',content:'Price (USD)'}, {hAlign:'center',content:'High'}, {hAlign:'center',content:'Low'}]
-    });
-}
 
 // Get Data
 if ( typeof coin !== 'undefined' && coin )
@@ -60,160 +34,43 @@ if ( typeof coin !== 'undefined' && coin )
     }
 
 } else {
-    getDefaultCoins();
+    getMarketCapData();
 }
-
-//Done.
 
     function getMarketCapData(){
 
-        return axios.get('https://api.coinmarketcap.com/v1/ticker/?limit=15')
-            .then(function (response) {
-
-            // Check for errors
-            if (response.data.error && response.data.error !== "") {
-                cexData = [{colSpan:5,content:response.data.error}];
-            } else {
-
-                // Get data
-                for(var i = 0; i < response.data.length; i++) {
-
-                    var coin = response.data[i];
-
-                    let coinRank = coin.rank;
-                    let coinName = coin.name;
-                    let coinSymbol = coin.symbol;
-                    let coinPrice = numberWithCommas(parseFloat(coin.price_usd).toFixed(4));
-                    let coinMarketCap = numberWithCommas(parseFloat(coin.market_cap_usd).toFixed(2));
-    
-                    cexData = [coinRank,coinName,coinSymbol, {hAlign:'right',content:'$' + coinPrice}, {hAlign:'right',content:'$' + coinMarketCap}];
-                
-                    table.push(cexData);
-
-                }
-
-            }
-
-            coolSpinner.stop()
-
+        market.getMarketCapData().then((response) => {
+            var tbl = tables.generateMarketDataTable(response);
+        
             console.log('');
-            console.log(table.toString());
+            console.log(tbl.toString());
 
-            tips(coin);
-
-            })
-            .catch(function (error) {
-                console.log(error);
-                //console.log('Ups. Something went wrong, please try again latter....');
-
-                return [{colSpan:5,content:'Ups. Something went wrong, please try again latter....'}];
-            });
+            coolSpinner.stop();
+            tips("");
+         });
     }
 
     function getDataPerCoin(coin){
         axios.all([
-            getCexInfoByCoin(coin, "cex.io"),
-            getBitstampInfoByCoin(coin, "Bitstamp.net"),
+            cexio.getDataByCoin(coin),
+            bitstamp.getDataByCoin(coin),
         ])
-        .then(axios.spread(function (priceRowCex, priceRowBitstamp) {
+        .then(axios.spread(function (priceCex, priceBt) {
           
-          table.push(priceRowCex);
-          table.push(priceRowBitstamp);
-    
-          coolSpinner.stop()
-      
-          console.log('');
-          console.log(table.toString());
-    
-          tips(coin);
-          
+        
+            var res = [];
+            res.push(priceCex);
+            res.push(priceBt);
+        
+            var tbl = tables.generatePricePerCoinTable(res);
+        
+            console.log('');
+            console.log(tbl.toString());
+
+            coolSpinner.stop();
+            tips(coin);
         }));
     }
- 
-    function getBitstampInfoByCoin(crypto, lbl){
-        return axios.get('https://www.bitstamp.net/api/v2/ticker/' + crypto + 'USD')
-            .then(function (response) {
-
-            // Check for errors
-            if (response.data.error && response.data.error !== "") {
-                cexData = [lbl, {colSpan:3,content:response.data.error}];
-            } else {
-                // Get data
-                let coinPrice = numberWithCommas(parseFloat(response.data.last).toFixed(4));
-                let coinLow = numberWithCommas(parseFloat(response.data.low).toFixed(4).toLocaleString());
-                let coinHigh = numberWithCommas(parseFloat(response.data.high).toFixed(4));
-
-                cexData = [lbl, {hAlign:'right',content:'$' + coinPrice}, {hAlign:'right',content:'$' + coinHigh}, {hAlign:'right',content:'$' + coinLow}];
-            }
-
-            return cexData;
-
-            })
-            .catch(function (error) {
-                //console.log(error);
-                //console.log('Ups. Something went wrong, please try again latter....');
-
-                return [lbl, {colSpan:3,content:'Ups. Something went wrong, please try again latter....'}];
-            });
-
-    }
-
-  function getCexInfoByCoin(crypto, lbl){
-
-    return axios.get('https://cex.io/api/ticker/' + crypto + '/USD')
-        .then(function (response) {
-
-        // Check for errors
-        if (response.data.error && response.data.error !== "") {
-            cexData = [lbl, {colSpan:3,content:response.data.error}];
-		} else {
-            // Get data
-            let coinPrice = numberWithCommas(parseFloat(response.data.last).toFixed(4));
-            let coinLow = numberWithCommas(parseFloat(response.data.low).toFixed(4).toLocaleString());
-            let coinHigh = numberWithCommas(parseFloat(response.data.high).toFixed(4));
-
-            cexData = [lbl, {hAlign:'right',content:'$' + coinPrice}, {hAlign:'right',content:'$' + coinHigh}, {hAlign:'right',content:'$' + coinLow}];
-        }
-
-        return cexData;
-
-        })
-        .catch(function (error) {
-            //console.log(error);
-            //console.log('Ups. Something went wrong, please try again latter....');
-
-            return [lbl, {colSpan:3,content:'Ups. Something went wrong, please try again latter....'}];
-        });
-
-  }
-
-  function getDefaultCoins(){
-
-    axios.all([
-        getCexInfoByCoin("XRP", "Ripple (XRP) - cex.io"), 
-        getCexInfoByCoin("BTC", "Bitcoin (BTC) - cex.io"),
-        getCexInfoByCoin("BCH", "Bitcoin Cash (BCH) - cex.io"),
-        getCexInfoByCoin("DASH", "Dash (DASH) - cex.io"),
-        getBitstampInfoByCoin("LTC", "LiteCoin (LTC) - Bitstamp.net"),
-    ])
-    .then(axios.spread(function (priceRowXRP, priceRowBTC, priceRowBCH, priceRowDASH, priceRowLTC) {
-      
-      table.push(priceRowXRP);
-      table.push(priceRowBTC);
-      table.push(priceRowBCH);
-      table.push(priceRowDASH);
-      table.push(priceRowLTC);
-      
-      console.log('');
-      console.log(table.toString());
-  
-      coolSpinner.stop();
-
-      tips();
-      
-    }));
-
-  }
 
   function tips(coin){
 
@@ -222,42 +79,17 @@ if ( typeof coin !== 'undefined' && coin )
     if (rnd == 1){
 
         console.log('');
-        console.log("Buy me a beer!");
         console.log('');
-
-        if ( typeof coin !== 'undefined' && coin && coin == 'MARKET' ){
-            switch (coin){
-                case "BCH":
-                    console.log("Bitcoin Cash (BCH): 34R3g2mybySCY2JSTAk1PsKvbcPX5Jd63P");
-                    break;
-                case "XRP":
-                    console.log("Ripple (XRP) Wallet: rE1sdh25BJQ3qFwngiTBwaq3zPGGYcrjp1 Destination Tag: 20293 ");
-                    break;
-                case "BTC":
-                    console.log("Bitcoin (BTC): 38c8kcc4tcZmb7DVn9LScxf4fMjCx3jVbU");
-                    break;
-                case "DASH":
-                    console.log("Dash : 7XKuMxdQyBsLtvaHHuUgYP7o9yDtCqJvt7");
-                    break;
-            }
-            
-        }else{
-
-            console.log("Bitcoin Cash (BCH): 34R3g2mybySCY2JSTAk1PsKvbcPX5Jd63P");
-            console.log("Ripple (XRP) Wallet: rE1sdh25BJQ3qFwngiTBwaq3zPGGYcrjp1 Destination Tag: 20293 ");
-            console.log("Bitcoin (BTC): 38c8kcc4tcZmb7DVn9LScxf4fMjCx3jVbU");
-            console.log("Dash : 7XKuMxdQyBsLtvaHHuUgYP7o9yDtCqJvt7");
-
-        }
-
+        console.log('If you would like to see this tool developed further consider sending over a tip');
+        console.log('');
+        console.log('| Coin               | Wallet                             | Destination Tag |');
+        console.log('|--------------------|------------------------------------|-----------------|');
+        console.log('| Bitcoin Cash (BCH) | 34R3g2mybySCY2JSTAk1PsKvbcPX5Jd63P |                 |');
+        console.log('| Ripple (XRP)       | rE1sdh25BJQ3qFwngiTBwaq3zPGGYcrjp1 | 20293           |');
+        console.log('| Bitcoin (BTC)      | 38c8kcc4tcZmb7DVn9LScxf4fMjCx3jVbU |                 |');
+        console.log('| Dash               | 7XKuMxdQyBsLtvaHHuUgYP7o9yDtCqJvt7 |                 |');
         console.log('');
 
     }
 
-  }
-
-  const numberWithCommas = (x) => {
-    var parts = x.toString().split(".");
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    return parts.join(".");
   }

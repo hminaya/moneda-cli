@@ -9,9 +9,17 @@ Command line to track cryptocurrency prices
 npm install -g moneda-cli
 ```
 
+### Upgrade
+
+New features are being added frequently, you should upgrade often
+
+```bash
+npm install -g moneda-cli
+```
+
 ### Usage
 ```bash
-# Gets price information for all supported coins
+# Displays market data for top 15 coins
 moneda
 ```
 
@@ -22,14 +30,6 @@ moneda [coin]
 # For example
 moneda XRP
 ```
-
-```bash
-# Gets Market Cap data
-moneda market
-```
-
-### Demo
-![example](https://i.imgur.com/bqSmoEd.gif)
 
 ### Supported Coins
 - [x] Ripple (XRP)
