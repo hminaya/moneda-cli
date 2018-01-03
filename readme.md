@@ -22,6 +22,7 @@ npm install -g moneda-cli
 # Displays market data for top 15 coins
 moneda
 ```
+![Market Data](https://github.com/hminaya/moneda-cli/raw/master/imgs/market.png)
 
 ```bash
 # Gets price information for a specific coin
@@ -30,6 +31,8 @@ moneda [coin]
 # For example
 moneda XRP
 ```
+![Market Data](https://github.com/hminaya/moneda-cli/raw/master/imgs/xrp.png)
+
 
 ### Supported Coins
 - [x] Ripple (XRP)
