@@ -54,6 +54,9 @@ moneda XRP
 - [x] bitstamp.net
 - [x] CoinMarketCap.com
 
+### Product Hunt
+**Share your thoughts on [Product Hunt](https://www.producthunt.com/posts/moneda-cli)**
+
 ### Tips
 
 If you'd like to see this tool developed further consider sending over a tip
