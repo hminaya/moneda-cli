@@ -1,3 +1,4 @@
+const colors = require('colors')
 const Table = require('cli-table2')
 
 function generatePricePerCoinTable(coinData){
@@ -32,14 +33,20 @@ function generatePricePerCoinTable(coinData){
 function generateMarketDataTable(coinMarketData){
 
     var table = new Table({
-        head: ['Rank', 'Name', 'Symbol', {hAlign:'center',content:'Price (USD)'}, {hAlign:'center',content:'Market Cap (USD)'}]
+        head: ['Rank', 'Name', 'Symbol', {hAlign:'center',content:'Price (USD)'}, {hAlign:'center',content:'Market Cap (USD)'},  {hAlign:'center',content:'Change (24h)'}]
     });
 
     for(var i = 0; i < coinMarketData.length; i++) {
 
         var coin = coinMarketData[i];
 
-        row = [coin.rank,coin.name,coin.symbol, {hAlign:'right',content:'$' + coin.price}, {hAlign:'right',content:'$' + coin.marketCap}];
+        if (coin.percentChange24h >= 0){
+            row = [coin.rank,coin.name,coin.symbol, {hAlign:'right',content:'$' + coin.price}, {hAlign:'right',content:'$' + coin.marketCap}, {hAlign:'right', content: coin.percentChange24h + '%'}];
+        }else{
+            row = [coin.rank,coin.name,coin.symbol, {hAlign:'right',content:'$' + coin.price}, {hAlign:'right',content:'$' + coin.marketCap},{hAlign:'right', content: coin.percentChange24h + '%'}];
+
+        }
+
     
         table.push(row);
 

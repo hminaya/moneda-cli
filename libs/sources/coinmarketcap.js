@@ -59,8 +59,9 @@ function getMarketCapData(){
             let coinSymbol = coin.symbol;
             let coinPrice = helpers.numberWithCommas(parseFloat(coin.price_usd).toFixed(4));
             let coinMarketCap = helpers.numberWithCommas(parseFloat(coin.market_cap_usd).toFixed(2));
+            let percent_change_24h = helpers.numberWithCommas(parseFloat(coin.percent_change_24h).toFixed(2));
 
-            var m = new market.MarketCap(coinRank, coinName, coinSymbol, coinPrice, coinMarketCap);
+            var m = new market.MarketCap(coinRank, coinName, coinSymbol, coinPrice, coinMarketCap, percent_change_24h);
             res.push(m);
 
         }
@@ -79,7 +80,6 @@ function getMarketCapData(){
 }
 
 function convertSymbolToId(symbol){
-
 
     switch (symbol) {
 

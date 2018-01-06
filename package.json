@@ -1,6 +1,6 @@
 {
   "name": "moneda-cli",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Command line to track cryptocurrency prices",
   "main": "index.js",
   "scripts": {
