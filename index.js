@@ -53,11 +53,12 @@ if ( typeof coin !== 'undefined' && coin )
             kraken.getDataByCoin(coin),
             market.getDataByCoin(coin)
         ])
-        .then(axios.spread(function (priceCex, priceBt, priceMkt) {
+        .then(axios.spread(function (priceCex, priceBt, priceKraken, priceMkt) {
           
             var res = [];
             res.push(priceCex);
             res.push(priceBt);
+            res.push(priceKraken);
             res.push(priceMkt);
         
             var tbl = tables.generatePricePerCoinTable(res);
