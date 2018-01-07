@@ -36,7 +36,7 @@ moneda -m 5
 # Display data for a specific coin from different sources
 moneda -t XRP
 ```
-![One Coin](https://github.com/hminaya/moneda-cli/raw/master/imgs/XRP.png)
+![One Coin](https://github.com/hminaya/moneda-cli/raw/master/imgs/one-coin.png)
 
 ```bash
 # Display data for a multiple coins from different sources
