@@ -5,6 +5,7 @@ const colors = require('colors')
 const ora = require('ora')
 const axios = require('axios')
 const Table = require('cli-table2')
+const commandLineArgs = require('command-line-args')
 
 // Sources
 const cexio = require('./libs/sources/cexio.js')
@@ -14,35 +15,48 @@ const kraken = require('./libs/sources/kraken.js')
 
 // Other
 const tables = require('./libs/tables.js')
+const usage = require('./libs/usage.js')
+const helpers = require('./libs/helpers.js')
 
-// Args
-let coin = process.argv.length > 2 ? process.argv[2].toUpperCase() : undefined;
+// Command line Args
+
+const optionDefinitions = [
+    { name: 'ticker', type: String, alias: 't', multiple: true, defaultOption: true},
+    { name: 'market', type: Number, alias: 'm'},
+    { name: 'silent', type: Boolean, alias: 's'}
+  ]
+
+const options = commandLineArgs(optionDefinitions)
+
+let cliOptions = helpers.cleanUpCommandLineOptions(options);
+
+if (cliOptions.showHelpSection){
+    usage.showUsage();
+}
+
+// Let the magic begin
 const coolSpinner = ora('Loading crypto magic').start()
 
 // Get Data
-if ( typeof coin !== 'undefined' && coin )
-{
-    if (coin == 'MARKET'){
-        getMarketCapData();
-    }else{
-        coolSpinner.text = 'Loading crypto magic - ' + coin;
-        getDataPerCoin(coin);
-    }
 
-} else {
-    getMarketCapData();
+if (cliOptions.showMarketData){
+    getMarketCapData(cliOptions.topCoinsLimit);
 }
 
-    function getMarketCapData(){
+for(var i = 0; i < cliOptions.tickerCount; i++) {
+    getDataPerCoin(cliOptions.tickers[i]);
+}
 
-        market.getMarketCapData().then((response) => {
+    function getMarketCapData(topCoinsLimit){
+
+        market.getMarketCapData(topCoinsLimit).then((response) => {
             var tbl = tables.generateMarketDataTable(response);
         
-            console.log('');
+            console.log('\n');
+            console.log(' Market Top ' + topCoinsLimit);
             console.log(tbl.toString());
 
             coolSpinner.stop();
-            printFooter("");
          });
     }
 
@@ -63,36 +77,10 @@ if ( typeof coin !== 'undefined' && coin )
         
             var tbl = tables.generatePricePerCoinTable(res);
         
-            console.log('');
+            console.log('\n');
+            console.log(' Ticker: ' + coin);
             console.log(tbl.toString());
 
             coolSpinner.stop();
-            printFooter(coin);
         }));
     }
-
-  function printFooter(coin){
-
-    var rnd = Math.floor(Math.random() * 4) + 1  
-
-    if (rnd == 1){
-        console.log('');
-        console.log('');
-        console.log('|---------------------------------------------------------------------------|');
-        console.log('| Moneda CLI                                                                |');
-        console.log('| https://github.com/hminaya/moneda-cli                                     |');
-        console.log('|---------------------------------------------------------------------------|');
-        console.log('| Donations:                                                                |');
-        console.log('|--------------------|------------------------------------|-----------------|');
-        console.log('| Coin               | Wallet                             | Destination Tag |');
-        console.log('|--------------------|------------------------------------|-----------------|');
-        console.log('| Bitcoin Cash (BCH) | 34R3g2mybySCY2JSTAk1PsKvbcPX5Jd63P |                 |');
-        console.log('| Ripple (XRP)       | rE1sdh25BJQ3qFwngiTBwaq3zPGGYcrjp1 | 20293           |');
-        console.log('| Bitcoin (BTC)      | 38c8kcc4tcZmb7DVn9LScxf4fMjCx3jVbU |                 |');
-        console.log('| Dash               | 7XKuMxdQyBsLtvaHHuUgYP7o9yDtCqJvt7 |                 |');
-        console.log('|---------------------------------------------------------------------------|');
-        console.log('');
-
-    }
-
-  }

@@ -38,8 +38,8 @@ function getDataByCoin(symbol){
 
 }
 
-function getMarketCapData(){
-    return axios.get('https://api.coinmarketcap.com/v1/ticker/?limit=15')
+function getMarketCapData(topCoinsLimit){
+    return axios.get('https://api.coinmarketcap.com/v1/ticker/?limit='+topCoinsLimit)
     .then(function (response) {
 
     // Check for errors
