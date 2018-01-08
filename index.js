@@ -12,6 +12,7 @@ const cexio = require('./libs/sources/cexio.js')
 const bitstamp = require('./libs/sources/bitstamp.js')
 const market = require('./libs/sources/coinmarketcap.js')
 const kraken = require('./libs/sources/kraken.js')
+const coinbase = require('./libs/sources/coinbase.js')
 
 // Other
 const tables = require('./libs/tables.js')
@@ -65,14 +66,16 @@ for(var i = 0; i < cliOptions.tickerCount; i++) {
             cexio.getDataByCoin(coin),
             bitstamp.getDataByCoin(coin),
             kraken.getDataByCoin(coin),
+            coinbase.getDataByCoin(coin),
             market.getDataByCoin(coin)
         ])
-        .then(axios.spread(function (priceCex, priceBt, priceKraken, priceMkt) {
+        .then(axios.spread(function (priceCex, priceBt, priceKraken, priceCoinbase, priceMkt) {
           
             var res = [];
             res.push(priceCex);
             res.push(priceBt);
             res.push(priceKraken);
+            res.push(priceCoinbase);
             res.push(priceMkt);
         
             var tbl = tables.generatePricePerCoinTable(res);

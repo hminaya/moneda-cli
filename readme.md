@@ -68,7 +68,7 @@ moneda XRP -m 5
 
 ### Supported Sources
 - [x] cex.io
-- [ ] gdax
+- [x] coinbase.com
 - [x] kraken.com
 - [x] bitstamp.net
 - [x] CoinMarketCap.com
