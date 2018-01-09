@@ -21,6 +21,6 @@
         "valid-typeof": "warn",
         "no-var": "error",
         "quotes": ["warn", "single"],
-        "max-lem": ["warn", {"code": 120, "skipBlankLines": true}]
+        "max-len": ["warn", 120]
     }
 }
