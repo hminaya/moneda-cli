@@ -39,23 +39,22 @@ if (cliOptions.showHelpSection){
 const coolSpinner = ora('Loading crypto magic').start()
 
 // Get Data
-
 if (cliOptions.showMarketData){
     getMarketCapData(cliOptions.topCoinsLimit);
 }
 
-for(var i = 0; i < cliOptions.tickerCount; i++) {
+for(let i = 0; i < cliOptions.tickerCount; i++) {
     getDataPerCoin(cliOptions.tickers[i]);
 }
 
     function getMarketCapData(topCoinsLimit){
 
         market.getMarketCapData(topCoinsLimit).then((response) => {
-            var tbl = tables.generateMarketDataTable(response);
+            const table = tables.generateMarketDataTable(response);
         
             console.log('\n');
             console.log(' Market Top ' + topCoinsLimit);
-            console.log(tbl.toString());
+            console.log(table.toString());
 
             coolSpinner.stop();
          });
@@ -71,18 +70,18 @@ for(var i = 0; i < cliOptions.tickerCount; i++) {
         ])
         .then(axios.spread(function (priceCex, priceBt, priceKraken, priceCoinbase, priceMkt) {
           
-            var res = [];
+            const res = [];
             res.push(priceCex);
             res.push(priceBt);
             res.push(priceKraken);
             res.push(priceCoinbase);
             res.push(priceMkt);
         
-            var tbl = tables.generatePricePerCoinTable(res);
+            const table = tables.generatePricePerCoinTable(res);
         
             console.log('\n');
             console.log(' Ticker: ' + coin);
-            console.log(tbl.toString());
+            console.log(table.toString());
 
             coolSpinner.stop();
         }));
