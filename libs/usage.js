@@ -28,6 +28,11 @@ function showUsage(){
               name: 'silent',
               alias: 's',
               description: 'If set to true will hide this guide'
+            },
+            {
+              name: 'output',
+              alias: 'o',
+              description: 'Output format: default (table-based text), json, csv'
             }
           ]
         },{
