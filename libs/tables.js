@@ -1,5 +1,5 @@
 const helpers = require('./helpers');
-const Table = require('cli-table2')
+const Table = require('cli-table3')
 
 function generatePricePerCoinTable(coinData){
     const table = new Table({
