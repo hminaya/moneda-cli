@@ -4,7 +4,7 @@
 const colors = require('colors')
 const ora = require('ora')
 const axios = require('axios')
-const Table = require('cli-table2')
+const Table = require('cli-table3')
 const commandLineArgs = require('command-line-args')
 
 // Sources
