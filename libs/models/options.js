@@ -1,11 +1,12 @@
 class Options {
 
-    constructor(tickers, currency, topCoinsLimit, silent){
+    constructor(tickers, currency, topCoinsLimit, silent, output){
 
         this.rawTickers = tickers;
         this.rawCurrency = currency;
         this.rawtopCoinsLimit = topCoinsLimit;
         this.rawsilent = silent;
+        this.rawoutput = output;
 
     }
 
@@ -56,6 +57,10 @@ class Options {
         }else {
             return true;
         }
+    }
+
+    get output(){
+        return this.rawoutput || 'default';
     }
 
 }

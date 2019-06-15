@@ -12,8 +12,9 @@ function cleanUpCommandLineOptions(options){
   let topCoinsLimit = options.market;
   let currency = options.currency;
   let silent = options.silent;
+  let output = options.output;
 
-  return new opt.Options(coin, currency, topCoinsLimit, silent);
+  return new opt.Options(coin, currency, topCoinsLimit, silent, output);
 }
 
 function colorizeNumber(number, text) {
