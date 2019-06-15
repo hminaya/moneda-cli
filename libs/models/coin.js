@@ -1,6 +1,5 @@
-class Coin {
-
-    constructor(symbol, currentPrice, high, low, source, error){
+module.exports.Coin = class Coin {
+    constructor(symbol, currentPrice, high, low, source, error) {
         this.symbol = symbol;
         this.currentPrice = currentPrice;
         this.high = high;
@@ -8,7 +7,4 @@ class Coin {
         this.source = source;
         this.error = error;
     }
-
 }
-
-module.exports.Coin = Coin;

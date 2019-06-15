@@ -1,6 +1,5 @@
-class MarketCap {
-
-    constructor(rank, name, symbol, price, marketCap, percent_change_24h, error){
+module.exports.MarketCap = class MarketCap {
+    constructor(rank, name, symbol, price, marketCap, percent_change_24h, error) {
         this.rank = rank;
         this.name = name;
         this.symbol = symbol;
@@ -9,7 +8,4 @@ class MarketCap {
         this.percentChange24h = percent_change_24h;
         this.error = error;
     }
-
 }
-
-module.exports.MarketCap = MarketCap;
