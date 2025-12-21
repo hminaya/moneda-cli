@@ -27,7 +27,7 @@ const normalizedArgs = process.argv.slice(2).map(arg => {
 const optionDefinitions = [
     { name: 'ticker', type: String, alias: 't', multiple: true, defaultOption: true},
     { name: 'market', type: Number, alias: 'm'},
-    { name: 'silent', type: Boolean, alias: 's'},
+    { name: 'seconds', type: Number, alias: 's'},
     { name: 'help', type: Boolean, alias: 'h'},
     { name: 'currency', type: String, alias: 'c'}
   ]
@@ -42,22 +42,43 @@ if (cliOptions.showHelpSection){
 }
 
 // Let the magic begin
-const coolSpinner = ora('Loading crypto prices').start()
+let coolSpinner = ora('Loading crypto prices').start()
 
 // Get Data - default to BTC if no ticker specified
 const tickersToFetch = cliOptions.tickerCount === 0 ? ['BTC'] : cliOptions.tickers;
 const targetCurrency = cliOptions.currency || 'USD';
+const refreshInterval = cliOptions.refreshInterval;
 
-// Get all coin data
-Promise.all(tickersToFetch.map(ticker => getDataPerCoin(ticker, targetCurrency)))
-    .then(() => {
-        tables.showDonationFooter();
-        coolSpinner.stop();
-    })
-    .catch((error) => {
-        console.error('Error fetching data:', error);
-        coolSpinner.stop();
-    });
+function fetchAndDisplay() {
+    // Get all coin data
+    Promise.all(tickersToFetch.map(ticker => getDataPerCoin(ticker, targetCurrency)))
+        .then(() => {
+            tables.showDonationFooter();
+            coolSpinner.stop();
+
+            if (refreshInterval) {
+                const now = new Date();
+                console.log(colors.grey('\nLast updated: ' + now.toLocaleTimeString()));
+                console.log(colors.grey('Refreshing every ' + refreshInterval + ' seconds... (Press Ctrl+C to exit)'));
+            }
+        })
+        .catch((error) => {
+            console.error('Error fetching data:', error);
+            coolSpinner.stop();
+        });
+}
+
+// Initial fetch
+fetchAndDisplay();
+
+// Set up continuous refresh if requested
+if (refreshInterval) {
+    setInterval(() => {
+        console.clear();
+        coolSpinner = ora('Loading crypto prices').start();
+        fetchAndDisplay();
+    }, refreshInterval * 1000);
+}
 
 function getDataPerCoin(coin, targetCurrency){
     return Promise.all([

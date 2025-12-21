@@ -25,6 +25,11 @@ function showUsage(){
               description: 'Display prices in specified currency (e.g., EUR, GBP, JPY). Default: USD'
             },
             {
+              name: 'seconds',
+              alias: 's',
+              description: 'Custom refresh interval in seconds. Default: 30 (always auto-refreshes)'
+            },
+            {
               name: 'help',
               alias: 'h',
               description: 'Show this help guide'

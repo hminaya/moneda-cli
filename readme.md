@@ -16,7 +16,7 @@ npm install -g moneda-cli
 ### Usage
 
 ```bash
-# Display price data for a specific coin
+# Display price data for a specific coin (auto-refreshes every 30 seconds)
 moneda -t BTC
 ```
 
@@ -24,6 +24,26 @@ moneda -t BTC
 # Display price data for multiple coins
 moneda -t BTC ETH XRP
 ```
+
+```bash
+# Display prices in a different currency
+moneda -t BTC -c EUR
+moneda -t ETH -c GBP
+moneda -t XRP -c JPY
+```
+
+```bash
+# Customize refresh interval (in seconds)
+moneda -t BTC -s 10     # Refresh every 10 seconds
+moneda -t ETH -s 60     # Refresh every 60 seconds
+```
+
+```bash
+# Show help
+moneda -h
+```
+
+**Note:** The app automatically refreshes prices every 30 seconds by default. Use the -s flag to customize the refresh interval.
 
 
 ### Supported Coins

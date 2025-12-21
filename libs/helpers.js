@@ -11,10 +11,10 @@ function cleanUpCommandLineOptions(options){
   let coin = options.ticker;
   let topCoinsLimit = options.market;
   let currency = options.currency;
-  let silent = options.silent;
+  let seconds = options.seconds;
   let help = options.help;
 
-  return new opt.Options(coin, currency, topCoinsLimit, silent, help);
+  return new opt.Options(coin, currency, topCoinsLimit, seconds, help);
 }
 
 function colorizeNumber(number, text) {
