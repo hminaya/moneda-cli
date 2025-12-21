@@ -20,36 +20,24 @@ function showUsage(){
               description: 'Crypto that you would like to list the price. You can list multiple tickers'
             },
             {
-              name: 'market',
-              alias: 'm',
-              description: 'Show Market data for the top n cryptocurrencies.'
+              name: 'currency',
+              alias: 'c',
+              description: 'Display prices in specified currency (e.g., EUR, GBP, JPY). Default: USD'
             },
             {
-              name: 'silent',
-              alias: 's',
-              description: 'If set to true will hide this guide'
+              name: 'help',
+              alias: 'h',
+              description: 'Show this help guide'
             }
           ]
         },{
-            content: 'Project home: [underline]{https://github.com/hminaya/moneda-cli}'
+            content: 'Project home: https://github.com/hminaya/moneda-cli'
         },{
           header: 'Donations',
           content: [
             {
-              desc: 'Ethereum (ETH)',
-              example: '0x948f2b275ac7c8a24d24c824891386f0dbf6e01e'
-            },
-            {
-              desc: 'Ripple (XRP)',
-              example: 'wallet: rE1sdh25BJQ3qFwngiTBwaq3zPGGYcrjp1 destination tag: 20293'
-            },
-            {
               desc: 'Bitcoin (BTC)',
-              example: '38c8kcc4tcZmb7DVn9LScxf4fMjCx3jVbU'
-            },
-            {
-              desc: 'Bitcoin Cash (BTH)',
-              example: '34R3g2mybySCY2JSTAk1PsKvbcPX5Jd63P'
+              example: 'bc1qkmt89twaqz5hvq9676agxj8jgatfy4wgyyuuzc'
             }
           ]
         }
