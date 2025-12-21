@@ -1,11 +1,12 @@
 class Options {
 
-    constructor(tickers, currency, topCoinsLimit, silent){
+    constructor(tickers, currency, topCoinsLimit, seconds, help){
 
         this.rawTickers = tickers;
         this.rawCurrency = currency;
         this.rawtopCoinsLimit = topCoinsLimit;
-        this.rawsilent = silent;
+        this.rawSeconds = seconds;
+        this.rawhelp = help;
 
     }
 
@@ -51,11 +52,39 @@ class Options {
 
     get showHelpSection(){
 
-        if ( typeof this.rawsilent !== 'undefined' && this.rawsilent ){
-            return false;
-        }else {
+        if ( typeof this.rawhelp !== 'undefined' && this.rawhelp ){
             return true;
+        }else {
+            return false;
         }
+    }
+
+    get currency(){
+        if ( typeof this.rawCurrency !== 'undefined' && this.rawCurrency ){
+            return this.rawCurrency.toUpperCase();
+        }else {
+            return 'USD';
+        }
+    }
+
+    get seconds(){
+        if ( typeof this.rawSeconds !== 'undefined' && this.rawSeconds ){
+            return this.rawSeconds;
+        }else {
+            return null;
+        }
+    }
+
+    get refreshInterval(){
+        // Always default to 30 seconds
+        if ( typeof this.rawSeconds !== 'undefined' && this.rawSeconds ){
+            // If a custom value is provided, use it
+            if (this.rawSeconds !== true) {
+                return this.rawSeconds;
+            }
+        }
+        // Default to 30 seconds in all cases
+        return 30;
     }
 
 }

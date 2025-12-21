@@ -1,6 +1,6 @@
 {
   "name": "moneda-cli",
-  "version": "2.3.1",
+  "version": "3.0",
   "description": "Command line to track cryptocurrency prices",
   "main": "index.js",
   "scripts": {
@@ -15,7 +15,7 @@
     "moneda": "./index.js"
   },
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=22.0.0"
   },
   "keywords": [
     "xrp",
@@ -32,14 +32,14 @@
   },
   "homepage": "https://github.com/hminaya/moneda-cli#readme",
   "dependencies": {
-    "axios": "^0.19.0",
-    "cli-table3": "^0.5.1",
-    "colors": "^1.3.3",
-    "command-line-args": "^4.0.7",
-    "command-line-usage": "^4.1.0",
-    "ora": "^1.4.0"
+    "axios": "^1.7.9",
+    "cli-table3": "^0.6.5",
+    "colors": "^1.4.0",
+    "command-line-args": "^6.0.0",
+    "command-line-usage": "^7.0.3",
+    "ora": "^5.4.1"
   },
   "devDependencies": {
-    "eslint": "^5.16.0"
+    "eslint": "^9.17.0"
   }
 }
