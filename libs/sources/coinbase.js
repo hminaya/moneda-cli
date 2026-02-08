@@ -1,59 +1,37 @@
-const axios = require('axios')
-const coin = require('./../models/coin.js')
-const helpers = require('./../helpers.js')
+import { Coin } from '../models/coin.js';
+import { numberWithCommas } from '../helpers.js';
 
-function getDataByCoin(symbol){
+/**
+ * @param {string} symbol - Ticker symbol (e.g. "BTC", "ETH")
+ * @returns {Promise<Coin>}
+ */
+export async function getDataByCoin(symbol) {
+  const coinbaseSymbol = convertSymbolToId(symbol);
 
-    symbol = convertSymbolToId(symbol);
+  try {
+    const response = await fetch(`https://api.coinbase.com/v2/prices/${coinbaseSymbol}/spot`);
+    const data = await response.json();
 
-    return axios.get('https://api.coinbase.com/v2/prices/' + convertSymbolToId(symbol) + '/spot')
-        .then(function (response) {
-
-        // Check for errors
-        if (response.data.error && response.data.error.length > 0) {
-
-            var c = new coin.Coin(symbol, 0, 0, 0, "coinbase.com", response.data.error.message);
-            return c;
-            
-		} else {
-
-            // Get data
-            let coinPrice = helpers.numberWithCommas(parseFloat(response.data.data.amount).toFixed(4));
-            let coinLow = "";
-            let coinHigh = "";
-
-            var c = new coin.Coin(symbol, coinPrice, coinHigh, coinLow, "coinbase.com", "");
-            return c;
-
-        }
-
-        })
-        .catch(function (error) {
-            //console.log(error);
-            //console.log('Ups. Something went wrong, please try again latter....');
-
-            var c = new coin.Coin(symbol, 0, 0, 0, "coinbase.com", 'Ups. Something went wrong, please try again latter....');
-            return c;
-
-        });
-
-}
-
-function convertSymbolToId(symbol){
-
-    switch (symbol) {
-
-        case "BTC":
-            return "BTC-USD"
-        case "ETH":
-            return "ETH-USD"
-        case "BCH":
-            return "BCH-USD"
-
-        default:
-            return symbol;
+    if (data.error && data.error.length > 0) {
+      return new Coin(symbol, 0, 0, 0, 'coinbase.com', data.error.message);
     }
+
+    const coinPrice = numberWithCommas(parseFloat(data.data.amount).toFixed(4));
+    return new Coin(symbol, coinPrice, '', '', 'coinbase.com', '');
+  } catch {
+    return new Coin(symbol, 0, 0, 0, 'coinbase.com', 'Something went wrong, please try again later.');
+  }
 }
 
-
-module.exports.getDataByCoin = getDataByCoin;
+/**
+ * @param {string} symbol
+ * @returns {string}
+ */
+function convertSymbolToId(symbol) {
+  switch (symbol) {
+    case 'BTC': return 'BTC-USD';
+    case 'ETH': return 'ETH-USD';
+    case 'BCH': return 'BCH-USD';
+    default: return symbol;
+  }
+}

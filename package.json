@@ -1,11 +1,13 @@
 {
   "name": "moneda-cli",
   "version": "3.0.0",
+  "type": "module",
   "description": "Command line to track cryptocurrency prices",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node ./index.js"
+    "dev": "node ./index.js",
+    "test": "node --test 'test/*.test.js'",
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
@@ -32,14 +34,15 @@
   },
   "homepage": "https://github.com/hminaya/moneda-cli#readme",
   "dependencies": {
-    "axios": "^1.7.9",
     "cli-table3": "^0.6.5",
-    "colors": "^1.4.0",
     "command-line-args": "^6.0.0",
     "command-line-usage": "^7.0.3",
-    "ora": "^5.4.1"
+    "ora": "^8.1.1",
+    "picocolors": "^1.1.1"
   },
   "devDependencies": {
-    "eslint": "^9.17.0"
+    "@eslint/js": "^9.17.0",
+    "eslint": "^9.17.0",
+    "globals": "^17.3.0"
   }
 }

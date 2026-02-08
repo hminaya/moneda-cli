@@ -1,115 +1,99 @@
 #!/usr/bin/env node
 
-// Dependencies
-const colors = require('colors')
-const ora = require('ora')
-const commandLineArgs = require('command-line-args')
+import pc from 'picocolors';
+import ora from 'ora';
+import commandLineArgs from 'command-line-args';
 
-// Sources
-const kraken = require('./libs/sources/kraken.js')
-const coinbase = require('./libs/sources/coinbase.js')
-const coingecko = require('./libs/sources/coingecko.js')
+import * as kraken from './libs/sources/kraken.js';
+import * as coinbase from './libs/sources/coinbase.js';
+import * as coingecko from './libs/sources/coingecko.js';
+import * as tables from './libs/tables.js';
+import { showUsage } from './libs/usage.js';
+import { cleanUpCommandLineOptions } from './libs/helpers.js';
+import { convertPrice } from './libs/currencyConverter.js';
 
-// Other
-const tables = require('./libs/tables.js')
-const usage = require('./libs/usage.js')
-const helpers = require('./libs/helpers.js')
-const currencyConverter = require('./libs/currencyConverter.js')
-
-// Command line Args - normalize to lowercase for case-insensitive flags
-const normalizedArgs = process.argv.slice(2).map(arg => {
-    if (arg.startsWith('-')) {
-        return arg.toLowerCase();
-    }
-    return arg;
-});
+// Command line args - normalize to lowercase for case-insensitive flags
+const normalizedArgs = process.argv.slice(2).map(arg =>
+  arg.startsWith('-') ? arg.toLowerCase() : arg
+);
 
 const optionDefinitions = [
-    { name: 'ticker', type: String, alias: 't', multiple: true, defaultOption: true},
-    { name: 'market', type: Number, alias: 'm'},
-    { name: 'seconds', type: Number, alias: 's'},
-    { name: 'help', type: Boolean, alias: 'h'},
-    { name: 'currency', type: String, alias: 'c'}
-  ]
+  { name: 'ticker', type: String, alias: 't', multiple: true, defaultOption: true },
+  { name: 'market', type: Number, alias: 'm' },
+  { name: 'seconds', type: Number, alias: 's' },
+  { name: 'help', type: Boolean, alias: 'h' },
+  { name: 'currency', type: String, alias: 'c' }
+];
 
-const options = commandLineArgs(optionDefinitions, { argv: normalizedArgs })
+const options = commandLineArgs(optionDefinitions, { argv: normalizedArgs });
+const cliOptions = cleanUpCommandLineOptions(options);
 
-let cliOptions = helpers.cleanUpCommandLineOptions(options);
-
-if (cliOptions.showHelpSection){
-    usage.showUsage();
-    process.exit(0);
+if (cliOptions.showHelpSection) {
+  showUsage();
+  process.exit(0);
 }
 
-// Let the magic begin
-let coolSpinner = ora('Loading crypto prices').start()
+let spinner = ora('Loading crypto prices').start();
 
-// Get Data - default to BTC if no ticker specified
 const tickersToFetch = cliOptions.tickerCount === 0 ? ['BTC'] : cliOptions.tickers;
 const targetCurrency = cliOptions.currency || 'USD';
 const refreshInterval = cliOptions.refreshInterval;
 
-function fetchAndDisplay() {
-    // Get all coin data
-    Promise.all(tickersToFetch.map(ticker => getDataPerCoin(ticker, targetCurrency)))
-        .then(() => {
-            tables.showDonationFooter();
-            coolSpinner.stop();
+/**
+ * @param {string} coin
+ * @param {string} targetCurrency
+ */
+async function getDataPerCoin(coin, targetCurrency) {
+  const [priceKraken, priceCoinbase, priceCoingecko] = await Promise.all([
+    kraken.getDataByCoin(coin),
+    coinbase.getDataByCoin(coin),
+    coingecko.getDataByCoin(coin, targetCurrency)
+  ]);
 
-            if (refreshInterval) {
-                const now = new Date();
-                console.log(colors.grey('\nLast updated: ' + now.toLocaleTimeString()));
-                console.log(colors.grey('Refreshing every ' + refreshInterval + ' seconds... (Press Ctrl+C to exit)'));
-            }
-        })
-        .catch((error) => {
-            console.error('Error fetching data:', error);
-            coolSpinner.stop();
-        });
+  // Use CoinGecko's prices to calculate exchange rate for Kraken and Coinbase
+  if (targetCurrency.toUpperCase() !== 'USD' && priceCoingecko.convertedPrice && priceCoingecko.currentPrice) {
+    const coingeckoUSD = parseFloat(String(priceCoingecko.currentPrice).replace(/,/g, ''));
+    const coingeckoConverted = parseFloat(String(priceCoingecko.convertedPrice).replace(/,/g, ''));
+    const exchangeRate = coingeckoConverted / coingeckoUSD;
+
+    priceKraken.convertedPrice = convertPrice(priceKraken.currentPrice, exchangeRate);
+    priceCoinbase.convertedPrice = convertPrice(priceCoinbase.currentPrice, exchangeRate);
+  }
+
+  const coinData = [priceKraken, priceCoinbase, priceCoingecko];
+  const table = tables.generatePricePerCoinTable(coinData, targetCurrency);
+  const coinSymbol = tables.getCoinSymbol(coin);
+
+  console.log('\n');
+  console.log(pc.bold(pc.cyan(` ${coinSymbol} ${coin}`)));
+  console.log(table.toString());
+}
+
+async function fetchAndDisplay() {
+  try {
+    await Promise.all(tickersToFetch.map(ticker => getDataPerCoin(ticker, targetCurrency)));
+    tables.showDonationFooter();
+    spinner.stop();
+
+    if (refreshInterval) {
+      const now = new Date();
+      console.log(pc.gray('\nLast updated: ' + now.toLocaleTimeString()));
+      console.log(pc.gray(`Refreshing every ${refreshInterval} seconds... (Press Ctrl+C to exit)`));
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    spinner.stop();
+  }
 }
 
 // Initial fetch
 fetchAndDisplay();
 
-// Set up continuous refresh if requested
+// Set up continuous refresh
 if (refreshInterval) {
-    setInterval(() => {
-        console.clear();
-        coolSpinner = ora('Loading crypto prices').start();
-        fetchAndDisplay();
-    }, refreshInterval * 1000);
-}
-
-function getDataPerCoin(coin, targetCurrency){
-    return Promise.all([
-        kraken.getDataByCoin(coin),
-        coinbase.getDataByCoin(coin),
-        coingecko.getDataByCoin(coin, targetCurrency)
-    ])
-    .then(function ([priceKraken, priceCoinbase, priceCoingecko]) {
-
-        // Use CoinGecko's prices to calculate exchange rate for Kraken and Coinbase
-        if (targetCurrency.toUpperCase() !== 'USD' && priceCoingecko.convertedPrice && priceCoingecko.currentPrice) {
-            // Calculate exchange rate from CoinGecko's data
-            const coingeckoUSD = parseFloat(priceCoingecko.currentPrice.replace(/,/g, ''));
-            const coingeckoConverted = parseFloat(priceCoingecko.convertedPrice.replace(/,/g, ''));
-            const exchangeRate = coingeckoConverted / coingeckoUSD;
-
-            // Apply to Kraken and Coinbase
-            priceKraken.convertedPrice = currencyConverter.convertPrice(priceKraken.currentPrice, exchangeRate);
-            priceCoinbase.convertedPrice = currencyConverter.convertPrice(priceCoinbase.currentPrice, exchangeRate);
-        }
-
-        const res = [];
-        res.push(priceKraken);
-        res.push(priceCoinbase);
-        res.push(priceCoingecko);
-
-        const table = tables.generatePricePerCoinTable(res, targetCurrency);
-        const coinSymbol = tables.getCoinSymbol(coin);
-
-        console.log('\n');
-        console.log(colors.bold.cyan(` ${coinSymbol} ${coin}`));
-        console.log(table.toString());
-    });
+  setInterval(() => {
+    console.clear();
+    spinner = ora('Loading crypto prices').start();
+    fetchAndDisplay();
+  }, refreshInterval * 1000);
 }

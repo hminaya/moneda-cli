@@ -1,66 +1,44 @@
-const axios = require('axios')
-const coin = require('./../models/coin.js')
-const helpers = require('./../helpers.js')
+import { Coin } from '../models/coin.js';
+import { numberWithCommas } from '../helpers.js';
 
-function getDataByCoin(symbol){
+/**
+ * @param {string} symbol - Ticker symbol (e.g. "BTC", "ETH")
+ * @returns {Promise<Coin>}
+ */
+export async function getDataByCoin(symbol) {
+  const krakenSymbol = convertSymbolToId(symbol);
 
-    symbol = convertSymbolToId(symbol);
+  try {
+    const response = await fetch(`https://api.kraken.com/0/public/Ticker?pair=${krakenSymbol}`);
+    const data = await response.json();
 
-    return axios.get('https://api.kraken.com/0/public/Ticker?pair=' + symbol)
-        .then(function (response) {
-
-        // Check for errors
-        if (response.data.error && response.data.error.length > 0) {
-
-            var c = new coin.Coin(symbol, 0, 0, 0, "kraken.com", response.data.error[0]);
-            return c;
-            
-		} else {
-
-            // Get data
-
-            let coinPrice = helpers.numberWithCommas(parseFloat(eval('response.data.result.' + symbol + '.c[0]')).toFixed(4));
-            let coinLow = helpers.numberWithCommas(parseFloat(eval('response.data.result.' + symbol + '.l[0]')).toFixed(4).toLocaleString());
-            let coinHigh = helpers.numberWithCommas(parseFloat(eval('response.data.result.' + symbol + '.h[0]')).toFixed(4));
-
-            var c = new coin.Coin(symbol, coinPrice, coinHigh, coinLow, "kraken.com", "");
-            return c;
-
-        }
-
-        })
-        .catch(function (error) {
-            //console.log(error);
-            //console.log('Ups. Something went wrong, please try again latter....');
-
-            var c = new coin.Coin(symbol, 0, 0, 0, "kraken.com", 'Ups. Something went wrong, please try again latter....');
-            return c;
-
-        });
-
-}
-
-function convertSymbolToId(symbol){
-
-    switch (symbol) {
-
-        case "XRP":
-            return "XXRPZUSD"
-        case "ETH":
-            return "XETHZUSD"
-        case "BCH":
-            return "BCHUSD"
-        case "LTC":
-            return "XLTCZUSD"
-        case "DASH":
-            return "DASHUSD"
-        case "XMR":
-            return "XXMRZUSD"
-
-        default:
-            return symbol;
+    if (data.error && data.error.length > 0) {
+      return new Coin(symbol, 0, 0, 0, 'kraken.com', data.error[0]);
     }
 
+    const result = data.result[krakenSymbol];
+    const coinPrice = numberWithCommas(parseFloat(result.c[0]).toFixed(4));
+    const coinLow = numberWithCommas(parseFloat(result.l[0]).toFixed(4));
+    const coinHigh = numberWithCommas(parseFloat(result.h[0]).toFixed(4));
+
+    return new Coin(symbol, coinPrice, coinHigh, coinLow, 'kraken.com', '');
+  } catch {
+    return new Coin(symbol, 0, 0, 0, 'kraken.com', 'Something went wrong, please try again later.');
+  }
 }
 
-module.exports.getDataByCoin = getDataByCoin;
+/**
+ * @param {string} symbol
+ * @returns {string}
+ */
+function convertSymbolToId(symbol) {
+  switch (symbol) {
+    case 'XRP': return 'XXRPZUSD';
+    case 'ETH': return 'XETHZUSD';
+    case 'BCH': return 'BCHUSD';
+    case 'LTC': return 'XLTCZUSD';
+    case 'DASH': return 'DASHUSD';
+    case 'XMR': return 'XXMRZUSD';
+    default: return symbol;
+  }
+}

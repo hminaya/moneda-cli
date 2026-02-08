@@ -1,79 +1,63 @@
-const axios = require('axios');
+import { numberWithCommas } from './helpers.js';
 
 // Cache for exchange rates (valid for 5 minutes)
 let exchangeRateCache = null;
 let cacheTimestamp = null;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 5 * 60 * 1000;
 
-async function getExchangeRate(targetCurrency) {
-    // Return 1 if USD (no conversion needed)
-    if (targetCurrency.toUpperCase() === 'USD') {
-        return 1;
+/**
+ * @param {string} targetCurrency
+ * @returns {Promise<number>}
+ */
+export async function getExchangeRate(targetCurrency) {
+  if (targetCurrency.toUpperCase() === 'USD') return 1;
+
+  const now = Date.now();
+  if (exchangeRateCache &&
+      exchangeRateCache.currency === targetCurrency.toUpperCase() &&
+      cacheTimestamp &&
+      (now - cacheTimestamp) < CACHE_DURATION) {
+    return exchangeRateCache.rate;
+  }
+
+  try {
+    const response = await fetch('https://api.coingecko.com/api/v3/exchange_rates');
+    const data = await response.json();
+    const rates = data.rates;
+    const targetRate = rates[targetCurrency.toLowerCase()];
+
+    if (!targetRate) {
+      console.error(`Currency ${targetCurrency} not found. Using USD.`);
+      return 1;
     }
 
-    // Check cache
-    const now = Date.now();
-    if (exchangeRateCache &&
-        exchangeRateCache.currency === targetCurrency.toUpperCase() &&
-        cacheTimestamp &&
-        (now - cacheTimestamp) < CACHE_DURATION) {
-        return exchangeRateCache.rate;
-    }
+    const usdRate = rates.usd.value;
+    const rate = targetRate.value / usdRate;
 
-    try {
-        // Fetch exchange rates from CoinGecko
-        const response = await axios.get('https://api.coingecko.com/api/v3/exchange_rates');
+    exchangeRateCache = { currency: targetCurrency.toUpperCase(), rate };
+    cacheTimestamp = now;
 
-        const rates = response.data.rates;
-        const targetRate = rates[targetCurrency.toLowerCase()];
-
-        if (!targetRate) {
-            console.error(`Currency ${targetCurrency} not found. Using USD.`);
-            return 1;
-        }
-
-        // CoinGecko returns rates relative to BTC, we need USD to target currency
-        // Formula: USD -> BTC -> Target
-        const usdRate = rates.usd.value;
-        const rate = targetRate.value / usdRate;
-
-        // Update cache
-        exchangeRateCache = {
-            currency: targetCurrency.toUpperCase(),
-            rate: rate
-        };
-        cacheTimestamp = now;
-
-        return rate;
-    } catch (error) {
-        console.error('Error fetching exchange rate:', error.message);
-        return 1; // Default to no conversion on error
-    }
+    return rate;
+  } catch (error) {
+    console.error('Error fetching exchange rate:', error.message);
+    return 1;
+  }
 }
 
-function convertPrice(usdPrice, exchangeRate) {
-    if (!usdPrice || !exchangeRate) {
-        return null;
-    }
+/**
+ * @param {string|number} usdPrice
+ * @param {number} exchangeRate
+ * @returns {string|null}
+ */
+export function convertPrice(usdPrice, exchangeRate) {
+  if (!usdPrice || !exchangeRate) return null;
 
-    // Handle string prices with commas
-    let numericPrice;
-    if (typeof usdPrice === 'string') {
-        numericPrice = parseFloat(usdPrice.replace(/,/g, ''));
-    } else {
-        numericPrice = parseFloat(usdPrice);
-    }
+  const numericPrice = typeof usdPrice === 'string'
+    ? parseFloat(usdPrice.replace(/,/g, ''))
+    : parseFloat(usdPrice);
 
-    if (isNaN(numericPrice)) {
-        return null;
-    }
+  if (isNaN(numericPrice)) return null;
 
-    const converted = numericPrice * exchangeRate;
-
-    return converted.toFixed(4).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const converted = numericPrice * exchangeRate;
+  return numberWithCommas(converted.toFixed(4));
 }
-
-module.exports = {
-    getExchangeRate,
-    convertPrice
-};

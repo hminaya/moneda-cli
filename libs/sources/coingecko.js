@@ -1,85 +1,59 @@
-const axios = require('axios')
-const coin = require('./../models/coin.js')
-const helpers = require('./../helpers.js')
+import { Coin } from '../models/coin.js';
+import { numberWithCommas } from '../helpers.js';
 
-function getDataByCoin(symbol, targetCurrency){
+/**
+ * @param {string} symbol - Ticker symbol (e.g. "BTC", "ETH")
+ * @param {string} [targetCurrency='USD']
+ * @returns {Promise<Coin>}
+ */
+export async function getDataByCoin(symbol, targetCurrency) {
+  const coinId = convertSymbolToId(symbol);
+  targetCurrency = targetCurrency || 'USD';
 
-    const coinId = convertSymbolToId(symbol);
-    targetCurrency = targetCurrency || 'USD';
+  let currencies = 'usd';
+  if (targetCurrency.toLowerCase() !== 'usd') {
+    currencies = `usd,${targetCurrency.toLowerCase()}`;
+  }
 
-    // Fetch both USD and target currency if different
-    let currencies = 'usd';
-    if (targetCurrency.toLowerCase() !== 'usd') {
-        currencies = 'usd,' + targetCurrency.toLowerCase();
+  try {
+    const response = await fetch(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=${currencies}`
+    );
+    const data = await response.json();
+
+    if (!data[coinId]) {
+      return new Coin(symbol, 0, 0, 0, 'coingecko.com', 'Coin not found');
     }
 
-    return axios.get('https://api.coingecko.com/api/v3/simple/price?ids=' + coinId + '&vs_currencies=' + currencies)
-        .then(function (response) {
+    const coinPrice = numberWithCommas(parseFloat(data[coinId].usd).toFixed(4));
 
-        // Check for errors
-        if (!response.data[coinId]) {
-
-            var c = new coin.Coin(symbol, 0, 0, 0, "coingecko.com", 'Coin not found');
-            return c;
-
-		} else {
-
-            // Get data
-            let coinPrice = helpers.numberWithCommas(parseFloat(response.data[coinId].usd).toFixed(4));
-            let coinLow = "";
-            let coinHigh = "";
-
-            let convertedPrice = null;
-            if (targetCurrency.toLowerCase() !== 'usd' && response.data[coinId][targetCurrency.toLowerCase()]) {
-                convertedPrice = helpers.numberWithCommas(parseFloat(response.data[coinId][targetCurrency.toLowerCase()]).toFixed(4));
-            }
-
-            var c = new coin.Coin(symbol, coinPrice, coinHigh, coinLow, "coingecko.com", "", convertedPrice);
-            return c;
-
-        }
-
-        })
-        .catch(function (error) {
-            //console.log(error);
-            //console.log('Ups. Something went wrong, please try again latter....');
-
-            var c = new coin.Coin(symbol, 0, 0, 0, "coingecko.com", 'Ups. Something went wrong, please try again latter....');
-            return c;
-
-        });
-
-}
-
-function convertSymbolToId(symbol){
-
-    switch (symbol) {
-
-        case "BTC":
-            return "bitcoin"
-        case "ETH":
-            return "ethereum"
-        case "XRP":
-            return "ripple"
-        case "BCH":
-            return "bitcoin-cash"
-        case "LTC":
-            return "litecoin"
-        case "DASH":
-            return "dash"
-        case "XMR":
-            return "monero"
-        case "ADA":
-            return "cardano"
-        case "XLM":
-            return "stellar"
-        case "MIOTA":
-            return "iota"
-
-        default:
-            return symbol.toLowerCase();
+    let convertedPrice = null;
+    if (targetCurrency.toLowerCase() !== 'usd' && data[coinId][targetCurrency.toLowerCase()]) {
+      convertedPrice = numberWithCommas(parseFloat(data[coinId][targetCurrency.toLowerCase()]).toFixed(4));
     }
+
+    return new Coin(symbol, coinPrice, '', '', 'coingecko.com', '', convertedPrice);
+  } catch {
+    return new Coin(symbol, 0, 0, 0, 'coingecko.com', 'Something went wrong, please try again later.');
+  }
 }
 
-
-module.exports.getDataByCoin = getDataByCoin;
+/**
+ * @param {string} symbol
+ * @returns {string}
+ */
+function convertSymbolToId(symbol) {
+  switch (symbol) {
+    case 'BTC': return 'bitcoin';
+    case 'ETH': return 'ethereum';
+    case 'XRP': return 'ripple';
+    case 'BCH': return 'bitcoin-cash';
+    case 'LTC': return 'litecoin';
+    case 'DASH': return 'dash';
+    case 'XMR': return 'monero';
+    case 'ADA': return 'cardano';
+    case 'XLM': return 'stellar';
+    case 'MIOTA': return 'iota';
+    default: return symbol.toLowerCase();
+  }
+}

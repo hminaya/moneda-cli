@@ -1,92 +1,60 @@
-class Options {
+export class Options {
+  /**
+   * @param {string[]|undefined} tickers
+   * @param {string|undefined} currency
+   * @param {number|undefined} topCoinsLimit
+   * @param {number|undefined} seconds
+   * @param {boolean|undefined} help
+   */
+  constructor(tickers, currency, topCoinsLimit, seconds, help) {
+    this.rawTickers = tickers;
+    this.rawCurrency = currency;
+    this.rawtopCoinsLimit = topCoinsLimit;
+    this.rawSeconds = seconds;
+    this.rawhelp = help;
+  }
 
-    constructor(tickers, currency, topCoinsLimit, seconds, help){
+  /** @returns {string[]|number} */
+  get tickers() {
+    return this.rawTickers || 0;
+  }
 
-        this.rawTickers = tickers;
-        this.rawCurrency = currency;
-        this.rawtopCoinsLimit = topCoinsLimit;
-        this.rawSeconds = seconds;
-        this.rawhelp = help;
+  /** @returns {number} */
+  get tickerCount() {
+    return this.rawTickers ? this.rawTickers.length : 0;
+  }
 
+  /** @returns {number} */
+  get topCoinsLimit() {
+    return this.rawtopCoinsLimit || 15;
+  }
+
+  /** @returns {boolean} */
+  get showMarketData() {
+    if (this.rawtopCoinsLimit) return true;
+    return this.tickerCount === 0;
+  }
+
+  /** @returns {boolean} */
+  get showHelpSection() {
+    return !!this.rawhelp;
+  }
+
+  /** @returns {string} */
+  get currency() {
+    return this.rawCurrency ? this.rawCurrency.toUpperCase() : 'USD';
+  }
+
+  /** @returns {number|null} */
+  get seconds() {
+    return this.rawSeconds || null;
+  }
+
+  /** @returns {number} */
+  get refreshInterval() {
+    if (this.rawSeconds && this.rawSeconds !== true) {
+      return this.rawSeconds;
     }
-
-    get tickers(){
-        if ( typeof this.rawTickers !== 'undefined' && this.rawTickers ){
-            return this.rawTickers;
-        }else {
-            return 0;
-        }
-    }
-
-    get tickerCount(){
-        if ( typeof this.rawTickers !== 'undefined' && this.rawTickers ){
-            return this.rawTickers.length;
-        }else {
-            return 0;
-        }
-    }
-
-    get topCoinsLimit(){
-
-        if ( typeof this.rawtopCoinsLimit !== 'undefined' && this.rawtopCoinsLimit ){
-            return this.rawtopCoinsLimit;
-        }else {
-            return 15;
-        }
-
-    }
-    get showMarketData(){
-
-        if ( typeof this.rawtopCoinsLimit !== 'undefined' && this.rawtopCoinsLimit ){
-            return true;
-        }else {
-
-            if (this.tickerCount == 0){
-                return true;
-            }else{
-                return false;
-            }
-
-        }
-    }
-
-    get showHelpSection(){
-
-        if ( typeof this.rawhelp !== 'undefined' && this.rawhelp ){
-            return true;
-        }else {
-            return false;
-        }
-    }
-
-    get currency(){
-        if ( typeof this.rawCurrency !== 'undefined' && this.rawCurrency ){
-            return this.rawCurrency.toUpperCase();
-        }else {
-            return 'USD';
-        }
-    }
-
-    get seconds(){
-        if ( typeof this.rawSeconds !== 'undefined' && this.rawSeconds ){
-            return this.rawSeconds;
-        }else {
-            return null;
-        }
-    }
-
-    get refreshInterval(){
-        // Always default to 30 seconds
-        if ( typeof this.rawSeconds !== 'undefined' && this.rawSeconds ){
-            // If a custom value is provided, use it
-            if (this.rawSeconds !== true) {
-                return this.rawSeconds;
-            }
-        }
-        // Default to 30 seconds in all cases
-        return 30;
-    }
-
+    return 30;
+  }
 }
-
-module.exports.Options = Options;
